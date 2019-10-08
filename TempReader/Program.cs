@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -13,10 +15,17 @@ namespace TempReader
         public DateTime DateTime { get; set; }
         public float Temperature { get; set; }
         public float? Humidity { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("{0}  Temperature: {1:0.0} °C", DateTime, Temperature) + 
+                   (Humidity == null ? string.Empty : string.Format(" Humidity: {0:0.0} %", Humidity.Value)); 
+        }
     }
 
     class Program
     {
+        const int DELAY = 2000;
 
         //https://github.com/adafruit/Adafruit_Python_DHT/blob/a609d7dcfb2b8208b88498c54a5c099e55159636/Adafruit_DHT/common.py
         //def read_retry(sensor, pin, retries=15, delay_seconds=2, platform=None)
@@ -27,16 +36,33 @@ namespace TempReader
             {
                 var temperature = (float)sensor.Temperature.Celsius;
                 var humidity = sensor.Humidity;
-                if (sensor.IsLastReadSuccessful && humidity>=0.0f && humidity<=100.0f && temperature> -100.0f && temperature<150.0f)
+                if (sensor.IsLastReadSuccessful && humidity>=0.0f && humidity<=100.0f && temperature>-100.0f && temperature<150.0f)
                 {
                     measure.DateTime = DateTime.Now;
                     measure.Temperature = temperature;
                     measure.Humidity = double.IsNaN(humidity) ? null : (float?)humidity;
                     break;
                 }                
-                Thread.Sleep(2000);
+                Thread.Sleep(DELAY);
             }
             return measure;
+        }
+
+        //https://forum.dexterindustries.com/t/solved-dht-sensor-occasionally-returning-spurious-values/2939/4
+        static List<Measure> NoiseCut(List<Measure> measures)
+        {
+            if (measures == null || measures.Count() == 0) throw new ArgumentException();
+            var avgT = measures.Sum(x => x.Temperature) / measures.Count;
+            var stdDevT = Math.Sqrt(measures.Sum(x => (x.Temperature - avgT) * (x.Temperature - avgT)) / measures.Count);
+            if (stdDevT > 0.0) measures = measures.Where(x => x.Temperature > avgT - stdDevT && x.Temperature < avgT + stdDevT).ToList();
+
+            if (measures.All(x => x.Humidity.HasValue))
+            {
+                var avgH = measures.Sum(x => x.Humidity.Value) / measures.Count;
+                var stdDevH = Math.Sqrt(measures.Sum(x => (x.Humidity.Value - avgH) * (x.Humidity.Value - avgH)) / measures.Count);
+                if (stdDevH > 0.0) measures = measures.Where(x => x.Humidity.Value > avgH - stdDevH && x.Humidity.Value < avgH + stdDevH).ToList();
+            }
+            return measures;
         }
 
         static DhtBase CreateSensor(string name, int pin)
@@ -55,7 +81,7 @@ namespace TempReader
         }
         static async System.Threading.Tasks.Task Main(string[] args)
         {
-            if (args.Length < 2)
+            if (args.Length < 2 || args.Length > 3)
             {
                 Console.WriteLine("Usage: " + System.AppDomain.CurrentDomain.FriendlyName + " Dht11|Dht21|Dht22 pinNumer [sensorId]");
                 Console.WriteLine("      pinNumer: The pin number (GPIO number)");
@@ -67,19 +93,44 @@ namespace TempReader
             var sensorId = args.Length>2 ? Int32.Parse(args[2]) : 1;
             using (var dht = CreateSensor(name, pin))
             {
-                var measure = ReadRetry(dht);
-                if (measure.DateTime == DateTime.MinValue)
+                var measures = new List<Measure>();
+                while (measures.Count < 5)
                 {
-                    Console.WriteLine("Failed to get reading.");
-                    return;
+                    var measuredValue = ReadRetry(dht);
+                    if (measuredValue.DateTime == DateTime.MinValue)
+                    {
+                        Console.WriteLine("Failed to get reading.");
+                        return;
+                    }
+                    #if (DEBUG) 
+                    {
+                        Console.WriteLine(measuredValue);
+                    } 
+                    #else
+                    {
+                        Console.Write(".");
+                    }
+                    #endif
+                    measures.Add(measuredValue);
+                    Thread.Sleep(DELAY);
                 }
-                measure.SensorId = sensorId;
-                Console.WriteLine(measure.DateTime.ToString() + " Temperature: " + measure.Temperature.ToString("0.0") + " °C" + 
-                                  (measure.Humidity==null ? string.Empty : (" Humidity: " + measure.Humidity.Value.ToString("0.0") + " % ")));
-                
+                Console.WriteLine();
+                measures = NoiseCut(measures);
+
+                var measure = new Measure
+                {
+                    SensorId = sensorId,
+                    DateTime = measures.First().DateTime,
+                    Temperature = (float)Math.Round(measures.Sum(x => x.Temperature) / measures.Count, 1),
+                    Humidity = measures.All(x => x.Humidity.HasValue) ? (float)Math.Round(measures.Sum(x => x.Humidity.Value) / measures.Count, 1) : (float?)null
+                };
+
+                Console.WriteLine(measure);
+
                 //Floor to minute
                 measure.DateTime = new DateTime(measure.DateTime.Year, measure.DateTime.Month, measure.DateTime.Day, measure.DateTime.Hour, measure.DateTime.Minute, 0);
 
+                //POST to api
                 using (var client = new HttpClient())
                 {
                     var response = await client.PostAsync("http://localhost:5000/api/measure", new StringContent(JsonConvert.SerializeObject(measure), Encoding.UTF8, "application/json"));
@@ -88,8 +139,8 @@ namespace TempReader
                         Console.WriteLine(response.StatusCode + " " + response.Content);
                     }
                 }
-                
+
             }
-        }
+        }        
     }
 }

@@ -216,14 +216,21 @@ function loadChart(id, date) {
 				}
       });
       
-      ctx = $('#humChart');
+    ctx = $('#humChart');
 	  var hmin = $.map(data, function (x) {return x.minHumidity});
-      var hmax = $.map(data, function (x) {return x.maxHumidity});
+    var hmax = $.map(data, function (x) {return x.maxHumidity});
 	  
 	  if (humChart) {
         humChart.destroy();
-      }
-	  
+    }
+
+    if (hmin.every(x => x === null) && hmax.every(x => x === null)) {
+        $(ctx).hide();
+        return;
+    }
+
+    $(ctx).show();
+
       humChart = new Chart(ctx, {
         type: "bar",
         data: {
@@ -376,8 +383,11 @@ function loadChartRangeDate(id, fromDate, toDate) {
       
       if (htem.every(x=>x === null))
       {
+        $(ctx).hide();
         return;
       }
+      $(ctx).show();
+
       rangeHumChart = new Chart(ctx, {
         type: "bar",
         data: {

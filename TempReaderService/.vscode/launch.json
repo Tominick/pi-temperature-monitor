@@ -1,0 +1,40 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (remote console)",
+           "type": "coreclr",
+           "request": "launch",
+           "preLaunchTask": "publish", 
+           //Install .NET Core 3.1 on Raspberry Pi 
+           //wget https://download.visualstudio.microsoft.com/download/pr/349f13f0-400e-476c-ba10-fe284b35b932/44a5863469051c5cf103129f1423ddb8/dotnet-sdk-3.1.102-linux-arm.tar.gz
+           //wget https://download.visualstudio.microsoft.com/download/pr/8ccacf09-e5eb-481b-a407-2398b08ac6ac/1cef921566cb9d1ca8c742c9c26a521c/aspnetcore-runtime-3.1.2-linux-arm.tar.gz
+           //mkdir dotnet-arm32
+           //tar zxf dotnet-sdk-3.1.102-linux-arm.tar.gz -C $HOME/dotnet-arm32
+           //tar zxf aspnetcore-runtime-3.1.2-linux-arm.tar.gz -C $HOME/dotnet-arm32
+           "program": "/home/pi/dotnet-arm32/dotnet",
+           "args": ["/home/pi/dotnet/TempReaderService/TempReaderService.dll"],
+           "cwd": "/home/pi/dotnet/TempReaderService",
+           "stopAtEntry": false,
+           "console": "internalConsole",
+           "pipeTransport": {
+               "pipeCwd": "${workspaceFolder}",
+               //Install PUTTY on Windows
+               //https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
+               "pipeProgram": "C:\\Program Files\\PuTTY\\PLINK.EXE",
+               "pipeArgs": [
+                   "-pw",
+                   "raspberry",         //Your Password
+                   "pi@192.168.0.76"    //user@IpOfYourRaspberry
+               ],
+               //Install the VS remote debugger on Raspberry Pi
+               //curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l ~/vsdbg
+               "debuggerPath": "/home/pi/vsdbg/vsdbg"
+           }
+        }
+
+    ]
+}

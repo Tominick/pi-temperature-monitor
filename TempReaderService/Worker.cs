@@ -71,12 +71,19 @@ namespace TempReaderService
             return measures;
         }
 
+        static DateTime MapDate(DateTime dt, TimeSpan interval)
+        {
+            var ticks = (dt.Ticks / interval.Ticks) * interval.Ticks;
+            return new DateTime(ticks);
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             const int minValidMeasures = 5;
-            var counter = 0;
             var validMeasures = new List<Measure>();
             Measure lastMeasure = null; 
+            var lastPost = DateTime.Now;
+                        
             using (var dht = CreateSensor(_options.SensorType, _options.Pin))
             {
                 while (!stoppingToken.IsCancellationRequested)
@@ -103,7 +110,7 @@ namespace TempReaderService
                             lastMeasure = new Measure
                                     {
                                         SensorId = _options.SensorId,
-                                        DateTime = validMeasures.Last().DateTime,
+                                        DateTime = startRun,
                                         Temperature = (float)Math.Round(validMeasures.Sum(x => x.Temperature) / validMeasures.Count, 1),
                                         Humidity = validMeasures.All(x => x.Humidity.HasValue) ? 
                                                 (float)Math.Round(validMeasures.Sum(x => x.Humidity.Value) / validMeasures.Count, 1) : 
@@ -114,10 +121,10 @@ namespace TempReaderService
                         }
                     }
                                     
-                    ++counter;
-
-                    if (validMeasures.Count >= minValidMeasures && ((counter * _options.Interval) % _options.PostApiInterval) == 0 && _options.PostApi)
+                    if (validMeasures.Count >= minValidMeasures && startRun>=lastPost.AddMilliseconds(_options.PostApiInterval) && _options.PostApi)
                     {
+                        lastPost = MapDate(startRun, new TimeSpan(0, 0, 0, 0, _options.PostApiInterval));
+                        lastMeasure.DateTime = lastPost;
                         //Floor to minute
                         if (_options.PostApiInterval % 60000 == 0) lastMeasure.DateTime = new DateTime(lastMeasure.DateTime.Year, lastMeasure.DateTime.Month, lastMeasure.DateTime.Day, lastMeasure.DateTime.Hour, lastMeasure.DateTime.Minute, 0);
 
@@ -127,11 +134,11 @@ namespace TempReaderService
                             var response = await client.PostAsync(_options.PostApiUrl, new StringContent(JsonConvert.SerializeObject(lastMeasure), Encoding.UTF8, "application/json"), stoppingToken);
                             if (!response.IsSuccessStatusCode)
                             {
-                                _logger.LogInformation(response.StatusCode + " " + response.Content);
+                                _logger.LogError(response.StatusCode + " " + response.Content);
                             }
                             else
                             {
-                                counter = 0;
+                                _logger.LogInformation("POSTED");
                             }
                         }
                     }

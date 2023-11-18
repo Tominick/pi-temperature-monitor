@@ -88,6 +88,10 @@ namespace TempReader
                 Console.WriteLine("      sensorId: 1 is default or any other integer");
                 return;
             }
+            if (args.Contains("-w"))
+            {
+                await MainForW1(args);
+            }
             var name = args[0];
             var pin = Int32.Parse(args[1]);            
             var sensorId = args.Length>2 ? Int32.Parse(args[2]) : 1;
@@ -141,6 +145,58 @@ namespace TempReader
                 }
 
             }
-        }        
+        }
+
+        //Experimental code for 1-gpio temperature sensor
+        //In /boot/config.txt add 
+        //dtoverlay=w1-gpio,gpiopin=21
+        //
+        //To check if ok:
+        //lsmod | grep w1
+        //To see last read temp:
+        //cat /sys/bus/w1/devices/28-030897945f4b/w1_slave
+        //
+        //Usage: ./TempReader /sys/bus/w1/devices/28-030897945f4b -w 
+        static async System.Threading.Tasks.Task MainForW1(string[] args)
+        {
+            var dir = args[0]; // "/sys/bus/w1/devices/28-030897945f4b";
+            if (System.IO.Directory.Exists(dir))
+            {
+                var lines = System.IO.File.ReadAllText(System.IO.Path.Combine(dir, "w1_slave")).Split('\n');
+                if (lines.Length==3)
+                {
+                    var s = lines[1].Substring(lines[1].IndexOf("t=")+"t=".Length);
+                    var i = int.Parse(s);
+
+                    var measure = new Measure
+                    {
+                        SensorId = 4,
+                        DateTime = DateTime.Now,
+                        Temperature = (float)i / 1000.0f,
+                    };
+
+                    //Floor to minute
+                    measure.DateTime = new DateTime(measure.DateTime.Year, measure.DateTime.Month, measure.DateTime.Day, measure.DateTime.Hour, measure.DateTime.Minute, 0);
+
+                    //POST to api
+                    using (var client = new HttpClient())
+                    {
+                        var response = await client.PostAsync("http://localhost:5000/api/measure", new StringContent(JsonConvert.SerializeObject(measure), Encoding.UTF8, "application/json"));
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            Console.WriteLine(response.StatusCode + " " + response.Content);
+                        }
+                    }
+                } else
+                {
+                    Console.WriteLine("Expected 3 lines: " + lines.Length);
+                }
+            } else
+            {
+                Console.WriteLine("Unable to find " + dir);
+            }
+                
+        }
+        
     }
 }

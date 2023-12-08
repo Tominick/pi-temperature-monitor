@@ -11,4 +11,18 @@ A systemd version of TempReader
 
 ![DatesRange](https://user-images.githubusercontent.com/20950618/65949096-d6d50980-e43b-11e9-8a1b-31c1f0dfcde0.png)
 
+# Example for systemd .service file
+```
+[Unit]
+Description=Temperature Reader Service
+After=time-sync.target
 
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/TempReaderService
+ExecStart=/home/pi/TempReaderService/TempReaderService
+
+[Install]
+WantedBy=multi-user.target
+```

@@ -11,7 +11,7 @@ A systemd version of TempReader
 
 ![DatesRange](https://user-images.githubusercontent.com/20950618/65949096-d6d50980-e43b-11e9-8a1b-31c1f0dfcde0.png)
 
-# Example for systemd .service file
+# Example of .service file
 ```
 [Unit]
 Description=Temperature Reader Service

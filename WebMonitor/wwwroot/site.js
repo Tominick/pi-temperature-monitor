@@ -150,12 +150,15 @@ function loadChartFromDate() {
 }
 
 function loadChart(id, date) {
+    const tBar1 = $("#bar1");
+    $(tBar1).removeAttr('style');
   $.ajax({
     type: "GET",
     url: uri + id + "/date/" + formatDateIso(date) + "/ByHourMinMax",
     cache: false
   })
-    .done(function (data) {
+      .done(function (data) {
+      $(tBar1).hide();    
       var ctx = $('#tempChart');
 
       var lbls = $.map(data, function (x) {return x.hour});
@@ -218,7 +221,7 @@ function loadChart(id, date) {
       
     ctx = $('#humChart');
 	  var hmin = $.map(data, function (x) {return x.minHumidity});
-    var hmax = $.map(data, function (x) {return x.maxHumidity});
+      var hmax = $.map(data, function (x) {return x.maxHumidity});
 	  
 	  if (humChart) {
         humChart.destroy();
@@ -276,7 +279,7 @@ function loadChart(id, date) {
                 beginAtZero: true,
                 min: 0,
                 max: 100,
-                stepSize: 10}
+                stepSize: 20}
 						}]
 					}
 				}
@@ -291,12 +294,15 @@ function loadChartRange() {
 }
 
 function loadChartRangeDate(id, fromDate, toDate) {
+    const tBar2 = $("#bar2");
+    $(tBar2).removeAttr('style');
   $.ajax({
     type: "GET",
     url: uri + id + "/from/" + formatDateIso(fromDate)+ "/to/" + formatDateIso(toDate) + "/ByDay",
     cache: false
   })
     .done(function (data) {
+          $(tBar2).hide();  
       var ctx = $('#rangeChart');
 
       var lbls = $.map(data, function (x) {return x.dateTime});
@@ -432,7 +438,7 @@ function loadChartRangeDate(id, fromDate, toDate) {
                 beginAtZero: true,
                 min: 0,
                 max: 100,
-                stepSize: 10
+                stepSize: 20,                
               }
             }]
           },

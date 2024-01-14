@@ -16,8 +16,8 @@
 		  border-radius: 50%;
 		  width: 120px;
 		  height: 120px;
-      animation: spin 2s linear infinite;
-      margin: auto;
+          animation: spin 2s linear infinite;
+          margin: auto;
 		}
 
 		@keyframes spin {
@@ -56,7 +56,47 @@
 .tabcontent {
   display: none;
 }
-</style>    
+        @keyframes barWidth {
+            0% {
+                width: 0%;
+            }
+
+            25% {
+                width: 50%;
+            }
+
+            50% {
+                width: 100%;
+            }
+
+            75% {
+                width: 50%;
+            }
+
+            100% {
+                width: 0%;
+            }
+        }
+
+        .horizontal-bar-wrap {
+            height: 4px;
+            width: 100%;
+        }
+        .bar {
+            position: relative;
+            width: 0%;
+            height: 100%;
+            margin: 0 auto;
+            animation: barWidth;
+            animation-duration: 2s;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+            animation-delay: 0s;
+            background: #3498db;
+            top: 0;
+            z-index: 1;
+        }
+    </style>    
 </head>
 <body>
 <!-- Navbar -->
@@ -100,20 +140,26 @@
     </div>
 
     <div class="tabcontent" id="hourContainer">
-      <h3 class="w3-blue">
-        <label for="inDate" class="w3-margin">Date</label>
-        <input class="w3-input w3-border" type="date" id="inDate">
-        <button href="javascript:void(0);" onclick="loadChartFromDate()" class="w3-btn w3-indigo w3-margin">Load</button>
-      </h3>
-      <div>
-          <canvas id="tempChart"></canvas>
-      </div>
-      <div>
-          <canvas id="humChart"></canvas>
-      </div>
+        <div class="horizontal-bar-wrap">
+            <div class="bar" id="bar1" style="display:none"></div>
+        </div>
+        <h3 class="w3-blue">
+            <label for="inDate" class="w3-margin">Date</label>
+            <input class="w3-input w3-border" type="date" id="inDate">
+            <button href="javascript:void(0);" onclick="loadChartFromDate()" class="w3-btn w3-indigo w3-margin">Load</button>
+        </h3>
+        <div>
+            <canvas id="tempChart"></canvas>
+        </div>
+        <div>
+            <canvas id="humChart"></canvas>
+        </div>
     </div>
 
     <div class="tabcontent" id="rangeContainer">
+        <div class="horizontal-bar-wrap">
+            <div class="bar" id="bar2" style="display:none"></div>
+        </div>
         <h3 class="w3-blue">
             <label for="fromDate" class="w3-margin">From</label>
             <input class="w3-input w3-border" type="date" id="fromDate">
@@ -125,7 +171,7 @@
             <canvas id="rangeChart"></canvas>
         </div>
         <div>
-          <canvas id="rangehumChart"></canvas>
+            <canvas id="rangehumChart"></canvas>
         </div>
     </div>
 </div>

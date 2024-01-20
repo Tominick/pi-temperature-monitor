@@ -186,7 +186,10 @@ function loadChart(id, date) {
             },
           ]
         },
-        options: {
+          options: {
+              legend: {
+                  display: false
+              },
 					title: {
 						display: true,
 						text: 'Temperature '+ formatDateIso(date)
@@ -251,7 +254,10 @@ function loadChart(id, date) {
             },
           ]
         },
-        options: {
+          options: {
+              legend: {
+                  display: false
+              },
 					title: {
 						display: true,
 						text: 'Humidity '+ formatDateIso(date)
@@ -331,7 +337,10 @@ function loadChartRangeDate(id, fromDate, toDate) {
           }
         ]
       },
-      options: {
+    options: {
+        legend: {
+            display: false
+        },
         title: {
           display: true,
           text: "Average Temperatures from " + formatDateIso(fromDate) + " to " + formatDateIso(toDate)
@@ -408,6 +417,9 @@ function loadChartRangeDate(id, fromDate, toDate) {
           ]
         },
         options: {
+            legend: {
+            display: false
+         },
           title: {
             display: true,
             text: "Average Humidity from " + formatDateIso(fromDate) + " to " + formatDateIso(toDate)
@@ -421,7 +433,7 @@ function loadChartRangeDate(id, fromDate, toDate) {
             xAxes: [{
               type: 'time',
               time: {
-                unit: 'day'
+                  unit: 'day'
               },
               // distribution: 'series',
               ticks: {

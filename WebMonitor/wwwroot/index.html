@@ -146,7 +146,7 @@
         <h3 class="w3-blue">
             <label for="inDate" class="w3-margin">Date</label>
             <input class="w3-input w3-border" type="date" id="inDate">
-            <button href="javascript:void(0);" onclick="loadChartFromDate()" class="w3-btn w3-indigo w3-margin">Load</button>
+            <button href="javascript:void(0);" onclick="loadChartFromDate()" class="w3-btn w3-indigo w3-margin" id="loadDateButton">Load</button>
         </h3>
         <div>
             <canvas id="tempChart"></canvas>
@@ -165,7 +165,7 @@
             <input class="w3-input w3-border" type="date" id="fromDate">
             <label for="toDate" class="w3-margin">To</label>
             <input class="w3-input w3-border" type="date" id="toDate">
-            <button href="javascript:void(0);" onclick="loadChartRange()" class="w3-btn w3-indigo w3-margin">Load</button>
+            <button href="javascript:void(0);" onclick="loadChartRange()" class="w3-btn w3-indigo w3-margin" id="loadRangeButton">Load</button>
         </h3>
         <div>
             <canvas id="rangeChart"></canvas>

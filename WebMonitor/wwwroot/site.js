@@ -151,14 +151,17 @@ function loadChartFromDate() {
 
 function loadChart(id, date) {
     const tBar1 = $("#bar1");
+    const loadButton = $("#loadDateButton");
     $(tBar1).removeAttr('style');
+    $(loadButton).prop("disabled", true);
   $.ajax({
     type: "GET",
     url: uri + id + "/date/" + formatDateIso(date) + "/ByHourMinMax",
     cache: false
   })
       .done(function (data) {
-      $(tBar1).hide();    
+      $(tBar1).hide();
+      $(loadButton).prop("disabled", false);
       var ctx = $('#tempChart');
 
       var lbls = $.map(data, function (x) {return x.hour});
@@ -301,14 +304,17 @@ function loadChartRange() {
 
 function loadChartRangeDate(id, fromDate, toDate) {
     const tBar2 = $("#bar2");
+    const loadButton = $("#loadRangeButton");
     $(tBar2).removeAttr('style');
+    $(loadButton).prop("disabled", true);
   $.ajax({
     type: "GET",
     url: uri + id + "/from/" + formatDateIso(fromDate)+ "/to/" + formatDateIso(toDate) + "/ByDay",
     cache: false
   })
     .done(function (data) {
-          $(tBar2).hide();  
+        $(tBar2).hide();  
+        $(loadButton).prop("disabled", false);
       var ctx = $('#rangeChart');
 
       var lbls = $.map(data, function (x) {return x.dateTime});

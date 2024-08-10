@@ -34,13 +34,13 @@ namespace TempReader
             var measure = new Measure();
             for (var i=0;i<retries;i++)
             {
-                var temperature = (float)sensor.Temperature.Celsius;
+                var temperature = sensor.Temperature;
                 var humidity = sensor.Humidity;
-                if (sensor.IsLastReadSuccessful && humidity>=0.0f && humidity<=100.0f && temperature>-100.0f && temperature<150.0f)
+                if (sensor.IsLastReadSuccessful && humidity.Percent>=0.0 && humidity.Percent <=100.0 && temperature.DegreesCelsius > -100.0 && temperature.DegreesCelsius < 150.0)
                 {
                     measure.DateTime = DateTime.Now;
-                    measure.Temperature = temperature;
-                    measure.Humidity = double.IsNaN(humidity) ? null : (float?)humidity;
+                    measure.Temperature = (float)temperature.DegreesCelsius;
+                    measure.Humidity = double.IsNaN(humidity.Percent) ? null : (float?)humidity.Percent;
                     break;
                 }                
                 Thread.Sleep(DELAY);

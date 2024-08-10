@@ -11,8 +11,8 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="3.1.2" />
     
-    <PackageReference Include="Iot.Device.Bindings" Version="1.0.0" />
-    <PackageReference Include="System.Device.Gpio" Version="1.0.0" />
+    <PackageReference Include="Iot.Device.Bindings" Version="1.2.0" />
+    <PackageReference Include="System.Device.Gpio" Version="1.2.0" />
 
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

@@ -12,7 +12,7 @@ let rangeHumChart = null;
 let myLine = null;
 var sersorId = 1;
 
-$(document).ready(function() {
+$(() => {
     var selectedId = $.urlParam('id');
     if (selectedId!=null) sersorId = parseInt(selectedId,10);
     getSensors();
@@ -118,7 +118,7 @@ function getData(id) {
       const tError = $("#error");
       $(tError).show();
 
-      $(tError).append("Unable to connect")
+      $(tError).empty().append("Unable to connect")
     })
 
 };
@@ -293,7 +293,15 @@ function loadChart(id, date) {
 					}
 				}
 			});
-    });
+      })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+          $(tBar1).hide();
+          $(loadButton).prop("disabled", false);
+
+          const tError = $("#error");
+          $(tError).show();
+          $(tError).empty().append(errorThrown)
+      });
 }
 
 function loadChartRange() {
@@ -307,174 +315,181 @@ function loadChartRangeDate(id, fromDate, toDate) {
     const loadButton = $("#loadRangeButton");
     $(tBar2).removeAttr('style');
     $(loadButton).prop("disabled", true);
-  $.ajax({
-    type: "GET",
-    url: uri + id + "/from/" + formatDateIso(fromDate)+ "/to/" + formatDateIso(toDate) + "/ByDay",
-    cache: false
-  })
-    .done(function (data) {
-        $(tBar2).hide();  
-        $(loadButton).prop("disabled", false);
-      var ctx = $('#rangeChart');
+    $.ajax({
+        type: "GET",
+        url: uri + id + "/from/" + formatDateIso(fromDate) + "/to/" + formatDateIso(toDate) + "/ByDay",
+        cache: false
+    })
+        .done(function (data) {
+            $(tBar2).hide();
+            $(loadButton).prop("disabled", false);
+            var ctx = $('#rangeChart');
 
-      var lbls = $.map(data, function (x) {return x.dateTime});
-      var ltem = $.map(data, function (x) {return x.temperature});
-      var htem = $.map(data, function (x) {return x.humidity});
+            var lbls = $.map(data, function (x) { return x.dateTime });
+            var ltem = $.map(data, function (x) { return x.temperature });
+            var htem = $.map(data, function (x) { return x.humidity });
 
-	  if (rangeChart) {
-      rangeChart.destroy();
-    }
-	  
-    rangeChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: lbls,
-        datasets: [
-          {
-            backgroundColor: "rgba(140, 140, 140, 0.8)",
-            borderColor: "rgba(140, 140, 140, 0.8)",
-            label: "Temperature",
-            data: ltem,
-            type: 'line',
-            pointRadius: 0,
-            fill: false,
-            lineTension: 0,
-            borderWidth: 2
-          }
-        ]
-      },
-    options: {
-        legend: {
-            display: false
-        },
-        title: {
-          display: true,
-          text: "Average Temperatures from " + formatDateIso(fromDate) + " to " + formatDateIso(toDate)
-        },
-        tooltips: {
-          mode: 'index',
-          intersect: false
-        },
-        responsive: true,
-        scales: {
-          xAxes: [{
-            type: 'time',
-            time: {
-              unit: 'day'
-            },
-            // distribution: 'series',
-            ticks: {
-              source: 'data',
-              autoSkip: true
+            if (rangeChart) {
+                rangeChart.destroy();
             }
-          }],
-          yAxes: [{
-            scaleLabel: {
-              display: true,
-              labelString: temperatureLabel,
-            },
-            ticks: {
-              suggestedMin: minTempSuggested,
-              suggestedMax: maxTempSuggested
-            }
-          }]
-        },
-        tooltips: {
-          intersect: false,
-          mode: 'index',
-          callbacks: {
-            label: function (tooltipItem, myData) {
-              var label = myData.datasets[tooltipItem.datasetIndex].label || '';
-              if (label) {
-                label += ': ';
-              }
-              label += parseFloat(tooltipItem.value).toFixed(2);
-              return label;
-            }
-          }
-        }
-      }
-      });
-      
-      ctx = $('#rangehumChart');
 
-      if (rangeHumChart) {
-        rangeHumChart.destroy();
-      }
-      
-      if (htem.every(x=>x === null))
-      {
-        $(ctx).hide();
-        return;
-      }
-      $(ctx).show();
-
-      rangeHumChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: lbls,
-          datasets: [
-            {
-              backgroundColor: "rgba(255, 130, 58, 0.2)",
-              borderColor: "rgba(255, 130, 58, 0.2)",
-              label: "Humidity",
-              data: htem              
-            }
-          ]
-        },
-        options: {
-            legend: {
-            display: false
-         },
-          title: {
-            display: true,
-            text: "Average Humidity from " + formatDateIso(fromDate) + " to " + formatDateIso(toDate)
-          },
-          tooltips: {
-            mode: 'index',
-            intersect: false
-          },
-          responsive: true,
-          scales: {
-            xAxes: [{
-              type: 'time',
-              time: {
-                  unit: 'day'
-              },
-              // distribution: 'series',
-              ticks: {
-                source: 'data',
-                autoSkip: true
-              }
-            }],
-            yAxes: [{
-              scaleLabel: {
-                display: true,
-                labelString: '%',
-              },
-              ticks: {
-                beginAtZero: true,
-                min: 0,
-                max: 100,
-                stepSize: 20,                
-              }
-            }]
-          },
-          tooltips: {
-            intersect: false,
-            mode: 'index',
-            callbacks: {
-              label: function (tooltipItem, myData) {
-                var label = myData.datasets[tooltipItem.datasetIndex].label || '';
-                if (label) {
-                  label += ': ';
+            rangeChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: lbls,
+                    datasets: [
+                        {
+                            backgroundColor: "rgba(140, 140, 140, 0.8)",
+                            borderColor: "rgba(140, 140, 140, 0.8)",
+                            label: "Temperature",
+                            data: ltem,
+                            type: 'line',
+                            pointRadius: 0,
+                            fill: false,
+                            lineTension: 0,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: "Average Temperatures from " + formatDateIso(fromDate) + " to " + formatDateIso(toDate)
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    responsive: true,
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            },
+                            // distribution: 'series',
+                            ticks: {
+                                source: 'data',
+                                autoSkip: true
+                            }
+                        }],
+                        yAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: temperatureLabel,
+                            },
+                            ticks: {
+                                suggestedMin: minTempSuggested,
+                                suggestedMax: maxTempSuggested
+                            }
+                        }]
+                    },
+                    tooltips: {
+                        intersect: false,
+                        mode: 'index',
+                        callbacks: {
+                            label: function (tooltipItem, myData) {
+                                var label = myData.datasets[tooltipItem.datasetIndex].label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += parseFloat(tooltipItem.value).toFixed(2);
+                                return label;
+                            }
+                        }
+                    }
                 }
-                label += parseFloat(tooltipItem.value).toFixed(2);
-                return label;
-              }
+            });
+
+            ctx = $('#rangehumChart');
+
+            if (rangeHumChart) {
+                rangeHumChart.destroy();
             }
-          }
-        }
+
+            if (htem.every(x => x === null)) {
+                $(ctx).hide();
+                return;
+            }
+            $(ctx).show();
+
+            rangeHumChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: lbls,
+                    datasets: [
+                        {
+                            backgroundColor: "rgba(255, 130, 58, 0.2)",
+                            borderColor: "rgba(255, 130, 58, 0.2)",
+                            label: "Humidity",
+                            data: htem
+                        }
+                    ]
+                },
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: "Average Humidity from " + formatDateIso(fromDate) + " to " + formatDateIso(toDate)
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    responsive: true,
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            },
+                            // distribution: 'series',
+                            ticks: {
+                                source: 'data',
+                                autoSkip: true
+                            }
+                        }],
+                        yAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: '%',
+                            },
+                            ticks: {
+                                beginAtZero: true,
+                                min: 0,
+                                max: 100,
+                                stepSize: 20,
+                            }
+                        }]
+                    },
+                    tooltips: {
+                        intersect: false,
+                        mode: 'index',
+                        callbacks: {
+                            label: function (tooltipItem, myData) {
+                                var label = myData.datasets[tooltipItem.datasetIndex].label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += parseFloat(tooltipItem.value).toFixed(2);
+                                return label;
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            $(tBar2).hide();
+            $(loadButton).prop("disabled", false);
+
+            const tError = $("#error");
+            $(tError).show();
+            $(tError).empty().append(errorThrown)
         });
-    });
   }

@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <UserSecretsId>dotnet-TempReaderService-3DC9D4E0-C4A8-40F6-A7D8-9721A9CF00E7</UserSecretsId>
-    <Version>1.0</Version>
+    <Version>1.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -46,16 +46,19 @@ namespace MeasApi.Controllers
         }
         
         [HttpGet("{id}/date/{date}")]
-        public async  Task<ActionResult<IEnumerable<Measure>>> GetDate(int id, DateTime date)
+        public async Task<ActionResult<IEnumerable<Measure>>> GetDate(int id, DateTime date)
         {
-            return await _context.Measures.Where(x=>x.SensorId == id && x.DateTime.Date == date).OrderBy(x => x.DateTime).ToListAsync();
+            return await _context.Measures
+                .Where(x => x.SensorId == id && x.DateTime == date)
+                .OrderBy(x => x.DateTime)
+                .ToListAsync();
         }
 
         [HttpGet("{id}/date/{date}/ByHour")]
         public async Task<ActionResult<IEnumerable<Measure>>> GetDateByHour(int id, DateTime date)
         {
-            return await _context.Measures.Where(x => x.SensorId == id && x.DateTime.Date == date).
-                         GroupBy(x => x.DateTime.Hour).Select(g => new Measure() { 
+            return await _context.Measures.Where(x => x.SensorId == id && x.DateTime.Date == date)
+                         .GroupBy(x => x.DateTime.Hour).Select(g => new Measure() { 
                              SensorId = g.First().SensorId,
                              DateTime = g.First().DateTime.Date, 
                              Temperature = g.Average(x => x.Temperature), 
@@ -63,27 +66,38 @@ namespace MeasApi.Controllers
         }
 
         [HttpGet("{id}/from/{fromDate}/to/{toDate}/ByDay")]
-        public async Task<ActionResult<IEnumerable<Measure>>> GetDateRangeByHour(int id, DateTime fromDate, DateTime toDate)
+        public async Task<ActionResult<IEnumerable<Measure>>> GetDateRangeByDay(int id, DateTime fromDate, DateTime toDate)
         {
-            return await _context.Measures.Where(x => x.SensorId == id && x.DateTime.Date>=fromDate && x.DateTime.Date<=toDate).
-                         GroupBy(x => x.DateTime.Date).Select(g => new Measure() { 
+            return await _context.Measures
+                         .Where(x => x.SensorId == id && x.DateTime.Date >= fromDate && x.DateTime.Date <= toDate)
+                         .GroupBy(x => x.DateTime.Date)
+                         .Select(g => new Measure()
+                         {
                              SensorId = g.First().SensorId,
-                             DateTime = g.First().DateTime.Date, 
-                             Temperature = g.Average(x => x.Temperature), 
-                             Humidity = g.Average(x => x.Humidity) }).OrderBy(x => x.DateTime).ToListAsync();
+                             DateTime = g.Key,
+                             Temperature = g.Average(x => x.Temperature),
+                             Humidity = g.Average(x => x.Humidity)
+                         })
+                         .OrderBy(x => x.DateTime)
+                         .ToListAsync();
         }
 
         [HttpGet("{id}/date/{date}/ByHourMinMax")]
         public async Task<ActionResult<IEnumerable<object>>> GetDateByHourMinMax(int id, DateTime date)
         {
-            return await _context.Measures.Where(x => x.SensorId == id && x.DateTime.Date == date).
-                         GroupBy(x => x.DateTime.Hour).Select(g => new { 
+            return await _context.Measures
+                        .Where(x => x.SensorId == id && x.DateTime.Date == date)
+                         .GroupBy(x => x.DateTime.Hour).Select(g => new
+                         {
                              SensorId = g.First().SensorId,
-                             Hour = g.Key, 
-                             MinTemperature = g.Min(x => x.Temperature), 
-                             MaxTemperature = g.Max(x => x.Temperature), 
+                             Hour = g.Key,
+                             MinTemperature = g.Min(x => x.Temperature),
+                             MaxTemperature = g.Max(x => x.Temperature),
                              MinHumidity = g.Min(x => x.Humidity),
-                             MaxHumidity = g.Max(x => x.Humidity)}).OrderBy(x => x.Hour).ToListAsync();
+                             MaxHumidity = g.Max(x => x.Humidity)
+                         })
+                         .OrderBy(x => x.Hour)
+                         .ToListAsync();
         }
 
 

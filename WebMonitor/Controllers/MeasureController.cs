@@ -16,7 +16,7 @@ namespace MeasApi.Controllers
 
         public MeasureController(MeasureContext context)
         {
-            _context = context;
+            _context = context;            
         }
 
         [HttpGet]
@@ -49,7 +49,7 @@ namespace MeasApi.Controllers
         public async Task<ActionResult<IEnumerable<Measure>>> GetDate(int id, DateTime date)
         {
             return await _context.Measures
-                .Where(x => x.SensorId == id && x.DateTime == date)
+                .Where(x => x.SensorId == id && x.DateTime >= date && x.DateTime < date.AddDays(1))
                 .OrderBy(x => x.DateTime)
                 .ToListAsync();
         }
@@ -57,7 +57,7 @@ namespace MeasApi.Controllers
         [HttpGet("{id}/date/{date}/ByHour")]
         public async Task<ActionResult<IEnumerable<Measure>>> GetDateByHour(int id, DateTime date)
         {
-            return await _context.Measures.Where(x => x.SensorId == id && x.DateTime.Date == date)
+            return await _context.Measures.Where(x => x.SensorId == id && x.DateTime >= date && x.DateTime < date.AddDays(1))
                          .GroupBy(x => x.DateTime.Hour).Select(g => new Measure() { 
                              SensorId = g.First().SensorId,
                              DateTime = g.First().DateTime.Date, 
@@ -86,7 +86,7 @@ namespace MeasApi.Controllers
         public async Task<ActionResult<IEnumerable<object>>> GetDateByHourMinMax(int id, DateTime date)
         {
             return await _context.Measures
-                        .Where(x => x.SensorId == id && x.DateTime.Date == date)
+                        .Where(x => x.SensorId == id && x.DateTime >= date && x.DateTime < date.AddDays(1))
                          .GroupBy(x => x.DateTime.Hour).Select(g => new
                          {
                              SensorId = g.First().SensorId,
@@ -96,8 +96,7 @@ namespace MeasApi.Controllers
                              MinHumidity = g.Min(x => x.Humidity),
                              MaxHumidity = g.Max(x => x.Humidity)
                          })
-                         .OrderBy(x => x.Hour)
-                         .ToListAsync();
+                         .OrderBy(x => x.Hour).ToListAsync();
         }
 
 

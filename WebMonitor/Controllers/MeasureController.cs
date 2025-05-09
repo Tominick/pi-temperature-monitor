@@ -69,7 +69,7 @@ namespace MeasApi.Controllers
         public async Task<ActionResult<IEnumerable<Measure>>> GetDateRangeByDay(int id, DateTime fromDate, DateTime toDate)
         {
             return await _context.Measures
-                         .Where(x => x.SensorId == id && x.DateTime.Date >= fromDate && x.DateTime.Date <= toDate)
+                         .Where(x => x.SensorId == id && x.DateTime >= fromDate && x.DateTime < toDate.AddDays(1))
                          .GroupBy(x => x.DateTime.Date)
                          .Select(g => new Measure()
                          {

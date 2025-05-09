@@ -68,6 +68,9 @@ function getData(id) {
       const tBody = $("#todos");
       $(tBody).empty();
 
+      const tError = $("#error");
+      $(tError).empty();
+
       var firstDate = null;
 
       $.each(data, function(key, item) {
@@ -162,6 +165,9 @@ function loadChart(id, date) {
       .done(function (data) {
       $(tBar1).hide();
       $(loadButton).prop("disabled", false);
+      const tError = $("#error");
+      $(tError).empty();
+
       var ctx = $('#tempChart');
 
       var lbls = $.map(data, function (x) {return x.hour});
@@ -323,6 +329,8 @@ function loadChartRangeDate(id, fromDate, toDate) {
         .done(function (data) {
             $(tBar2).hide();
             $(loadButton).prop("disabled", false);
+            const tError = $("#error");
+            $(tError).empty();
             var ctx = $('#rangeChart');
 
             var lbls = $.map(data, function (x) { return x.dateTime });
